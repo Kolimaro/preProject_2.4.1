@@ -49,7 +49,7 @@ public class HibernateConfig {
     public LocalSessionFactoryBean sessionFactory() {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setDataSource(dataSource());
-        sessionFactory.setPackagesToScan("crudhibermvc.model");
+        sessionFactory.setPackagesToScan("crudhibermvc.entity");
         sessionFactory.setHibernateProperties(hibernateProperties());
         return sessionFactory;
     }
