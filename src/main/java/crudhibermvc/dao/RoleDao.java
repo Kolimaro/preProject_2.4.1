@@ -1,4 +1,4 @@
-package crudhibermvc.repository;
+package crudhibermvc.dao;
 
 import crudhibermvc.entity.Role;
 

@@ -3,8 +3,8 @@ package crudhibermvc.service;
 
 import crudhibermvc.entity.Role;
 import crudhibermvc.entity.User;
-import crudhibermvc.repository.RoleDao;
-import crudhibermvc.repository.UserDao;
+import crudhibermvc.dao.RoleDao;
+import crudhibermvc.dao.UserDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -36,7 +36,6 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userDao.findByUsername(username);
-
         if (user == null) {
             throw new UsernameNotFoundException("User not found");
         }
@@ -49,11 +48,9 @@ public class UserService implements UserDetailsService {
 
     public boolean saveUser(User user) {
         User userFromDb = userDao.findByUsername(user.getUsername());
-
         if (userFromDb != null) {
             return false;
         }
-
         if (user.getRoles() == null) {
             user.setRoles(Collections.singleton(roleDao.findById(1L)));
         }
