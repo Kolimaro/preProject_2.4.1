@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.NoResultException;
 import java.util.List;
 
 /**
@@ -23,10 +24,14 @@ public class UserDaoImpl implements UserDao {
     @Override
     @Transactional
     public User findByUsername(String username) {
-        Session session = sessionFactory.getCurrentSession();
-        Query<User> query = session.createQuery("SELECT u FROM User u WHERE u.username = :u_username", User.class);
-        query.setParameter("u_username", username);
-        return query.getSingleResult();
+        try {
+            Session session = sessionFactory.getCurrentSession();
+            Query<User> query = session.createQuery("SELECT u FROM User u WHERE u.username = :u_username", User.class);
+            query.setParameter("u_username", username);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
 
     @Override

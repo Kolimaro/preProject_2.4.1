@@ -1,6 +1,5 @@
 package crudhibermvc.config.handler;
 
-import crudhibermvc.entity.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.DefaultRedirectStrategy;
@@ -10,8 +9,8 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.Collection;
 
 /**
  * @author Pavel Tokarev, 19.05.2020
@@ -24,21 +23,19 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        redirectStrategy.sendRedirect(request, response, determineTargetUrl(request, authentication));
+        redirectStrategy.sendRedirect(request, response, determineTargetUrl(authentication));
     }
 
-    protected String determineTargetUrl(HttpServletRequest request, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        Long id = user.getId();
-        HttpSession session = request.getSession();
-        session.setAttribute("id", id);
-        for (GrantedAuthority grantedAuthority : user.getRoles()) {
-            if (grantedAuthority.getAuthority().equals("ROLE_ADMIN")) {
+    protected String determineTargetUrl(Authentication authentication) {
+
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        for (GrantedAuthority grantedAuthority : authorities) {
+            if (grantedAuthority.getAuthority().equals("ADMIN")) {
                 return "/admin";
             }
         }
-        for (GrantedAuthority grantedAuthority : user.getRoles()) {
-            if (grantedAuthority.getAuthority().equals("ROLE_USER")) {
+        for (GrantedAuthority grantedAuthority : authorities) {
+            if (grantedAuthority.getAuthority().equals("USER")) {
                 return "/user";
             }
         }

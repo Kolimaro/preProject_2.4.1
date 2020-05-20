@@ -2,8 +2,9 @@ package crudhibermvc.entity;
 
 import org.springframework.security.core.GrantedAuthority;
 
-import javax.persistence.*;
-import java.util.Set;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * @author Pavel Tokarev, 19.05.2020
@@ -17,10 +18,6 @@ public class Role implements GrantedAuthority {
     private Long id;
 
     private String name;
-
-    @Transient
-    @ManyToMany(mappedBy = "roles")
-    private Set<User> users;
 
     public Role() {
     }
@@ -55,11 +52,4 @@ public class Role implements GrantedAuthority {
         this.name = name;
     }
 
-    public Set<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(Set<User> users) {
-        this.users = users;
-    }
 }

@@ -3,6 +3,7 @@ package crudhibermvc.service;
 
 import crudhibermvc.entity.Role;
 import crudhibermvc.entity.User;
+import crudhibermvc.repository.RoleDao;
 import crudhibermvc.repository.UserDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,7 +13,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Pavel Tokarev, 19.05.2020
@@ -23,6 +26,9 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+    private RoleDao roleDao;
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
@@ -37,14 +43,6 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-    public User findUserById(Long userId) {
-        return userDao.findById(userId);
-    }
-
-    public User findUserByUsername(String username) {
-        return userDao.findByUsername(username);
-    }
-
     public List<User> allUsers() {
         return userDao.findAll();
     }
@@ -57,11 +55,22 @@ public class UserService implements UserDetailsService {
         }
 
         if (user.getRoles() == null) {
-            user.setRoles(Collections.singleton(new Role(1L, "ROLE_USER")));
+            user.setRoles(Collections.singleton(roleDao.findById(1L)));
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userDao.save(user);
         return true;
+    }
+
+    public void setRoles(User user, String userRole) {
+        Set<Role> roles = new HashSet<>();
+        if (userRole.toUpperCase().contains("ADMIN")) {
+            roles.add(roleDao.findById(2L));
+        }
+        if (userRole.toUpperCase().contains("USER")) {
+            roles.add(roleDao.findById(1L));
+        }
+        user.setRoles(roles);
     }
 
     public void updateUser(User user) {

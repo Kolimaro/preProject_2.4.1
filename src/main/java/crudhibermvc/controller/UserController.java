@@ -1,18 +1,18 @@
 package crudhibermvc.controller;
 
 
-import crudhibermvc.entity.Role;
 import crudhibermvc.entity.User;
 import crudhibermvc.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Pavel Tokarev, 19.05.2020
@@ -25,8 +25,8 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/user")
-    public String getUser(HttpSession session, Model model) {
-        User user = userService.findUserById((Long) session.getAttribute("id"));
+    public String getUser(Authentication authentication, Model model) {
+        User user = (User) authentication.getPrincipal();
         model.addAttribute("userForm", user);
         return "user";
     }
@@ -38,6 +38,23 @@ public class UserController {
         return "admin";
     }
 
+    @GetMapping("/admin/addUser")
+    public String addUser(Model model) {
+        model.addAttribute("userForm", new User());
+        return "addUser";
+    }
+
+    @PostMapping("/admin/addUser")
+    public String addUser(@RequestParam(required = true, defaultValue = "") String userRole,
+                          @ModelAttribute("userForm") @Valid User userForm, Model model) {
+        userService.setRoles(userForm, userRole);
+        if (!userService.saveUser(userForm)) {
+            model.addAttribute("usernameError", "Пользователь с таким именем уже существует");
+            return "addUser";
+        }
+        return "redirect:/admin";
+    }
+
     @GetMapping("/admin/update")
     public String updateUser(@RequestParam(required = true, defaultValue = "") Long userId,
                              Model model) {
@@ -47,40 +64,12 @@ public class UserController {
         return "update";
     }
 
-    @GetMapping("/admin/addUser")
-    public String addUser(Model model) {
-        model.addAttribute("userForm", new User());
-        return "addUser";
-    }
-
-    @PostMapping("/admin/addUser")
-    public String addUser(@RequestParam(required = true, defaultValue = "") String userRole,
-                          @ModelAttribute("userForm") @Valid User userForm) {
-        Set<Role> roles = new HashSet<>();
-        if (userRole.contains("ADMIN")) {
-            roles.add(new Role(2L, "ROLE_ADMIN"));
-        }
-        if (userRole.contains("USER")) {
-            roles.add(new Role(1L, "ROLE_USER"));
-        }
-        userForm.setRoles(roles);
-        userService.saveUser(userForm);
-        return "redirect:/admin";
-    }
-
     @PostMapping("/admin/update")
     public String updateUser(@RequestParam(required = true, defaultValue = "") Long userId,
                              @RequestParam(required = true, defaultValue = "") String userRole,
                              @ModelAttribute("userForm") @Valid User userForm) {
-        Set<Role> roles = new HashSet<>();
-        if (userRole.contains("ADMIN")) {
-            roles.add(new Role(2L, "ROLE_ADMIN"));
-        }
-        if (userRole.contains("USER")) {
-            roles.add(new Role(1L, "ROLE_USER"));
-        }
         userForm.setId(userId);
-        userForm.setRoles(roles);
+        userService.setRoles(userForm, userRole);
         userService.updateUser(userForm);
         return "redirect:/admin";
     }
